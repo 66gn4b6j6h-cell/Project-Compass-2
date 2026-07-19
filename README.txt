@@ -1,21 +1,19 @@
-THE SAKURA & SEOUL JOURNAL — FUNCTIONAL V1
+THE SAKURA & SEOUL JOURNAL — FUNCTIONAL VERSION 2
 
-DEPLOYMENT
-1. Upload index.html to the root of the GitHub Pages repository.
-2. Upload .nojekyll beside it.
-3. GitHub Pages source should remain: main branch / root.
+DEPLOY
+Upload index.html, .nojekyll, and the entire docs folder to the root of the new GitHub repository. Keep the docs folder name unchanged. Enable GitHub Pages from main / root.
 
-This is a self-contained single-file app. No asset folders are required.
+V2 IMPROVEMENTS
+- Traveler Essentials rebuilt as a real hub
+- Accommodation profiles with room, price, dates, address context and nearby food
+- Flights & Tickets separated from Trip Readiness
+- Official uploaded flight documents included
+- Luggage and Practical sections contain full pages
+- Every food card opens a location detail page
+- Live directions from the relevant hotel/basecamp
+- Shopping entries are individual clickable locations, not grouped text
+- Official flight prices and native-currency amounts loaded
+- Corrected route removes Hakone hotel and uses Tokyo Oct 14–21
 
-FUNCTIONS INCLUDED
-- Complete hash-based navigation with no placeholder landing pages
-- All trip cities and stays loaded
-- Full itinerary loaded
-- Full restaurant database loaded and searchable/filterable
-- Restaurant favourites, visited state and ratings
-- Expense add/delete and budget summary
-- Readiness checklist and progress
-- Shopping/local finds
-- Traveler essentials and luggage-forwarding guidance
-- Journal notes
-- Local device persistence using localStorage
+IMPORTANT
+Some hotel room types and confirmation numbers were not present in the uploaded documents. V2 labels these as missing instead of inventing them. Exact restaurant walking times and current hours open live in Google Maps because those values change.

@@ -454,22 +454,75 @@ const oldRenderReadiness=renderReadiness;
 renderReadiness=function(){oldRenderReadiness();const el=document.querySelector('.page-title p');if(el)el.textContent='Confirmed flights, hotels and booked tickets count automatically; personal prep tasks remain checkable.'};
 // ===== END V7 DEPLOYMENT DATA CORRECTIONS =====
 
+
+// ===== V8 SEOUL + HOMEPAGE UPDATE =====
+// Visual: restore a real travel photograph to the home hero; preserve calm journal styling.
+const v8style=document.createElement('style');
+v8style.textContent=`
+.hero{background-image:url('assets/hero/home-fuji.jpg')!important;background-size:cover!important;background-position:center 58%!important;min-height:320px!important}
+.hero:after{background:linear-gradient(180deg,rgba(30,25,23,.02),rgba(30,25,23,.66))!important}
+.hero-copy{ text-shadow:0 1px 12px rgba(0,0,0,.22) }
+.kicker,.btn,.chip,.tab,nav span,.badge{text-transform:none!important;letter-spacing:.01em!important}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif!important}
+h1,h2,h3,.brand b,.page-title h1,.section-head h2,.hero-copy h1,.metric b,.amount{font-family:Georgia,"Times New Roman",serif!important}
+`;
+document.head.appendChild(v8style);
+
+const seoulFood=[
+['seoul-vegan-kitchen','Myeongdong','Lunch & Dinner','Vegan Kitchen','Yes','Yes','No','Vegan bulgogi; tteokbokki; mandu dumplings; japchae','Fully vegan Myeongdong restaurant; screenshot notes robot table delivery and Monday closure.'],
+['seoul-osegye','Insadong','Traditional Korean','Osegye Hyang','Yes','Yes','No','Traditional Korean vegan dishes','Screenshot describes Michelin recognition, English iPad ordering, long queues and Thursday closure.'],
+['seoul-vegan-insa','Ikseon-dong / Insadong','Traditional Korean','Vegan Insa','Yes','Yes','No','Vegan fried chicken; bibimbap with vegan egg','Hanok-setting vegan Korean classics; screenshot recommends courtyard seating.'],
+['seoul-hangwachae','Insadong','Temple Food','Hangwachae','Yes','Yes','No','Buddhist temple-food buffet','Screenshot describes a vegan buffet with 30+ dishes.'],
+['seoul-plantude','COEX / Gangnam','Lunch & Dinner','Plantude','Yes','Yes','No','Seasonal Korean-Western fusion','Saved lead next to Starfield Library.'],
+['seoul-veggreen','Hongdae','Buffet','Veg Green','Yes','Yes','No','Vegan buffet','Saved hidden-gem lead.'],
+['seoul-bytofu','Haebangchon','Cafe & Brunch','byTOFU','Yes','Yes','No','Eggless egg sandwich; tofu dishes','Saved vegan cafe lead; screenshot says go before noon because items can sell out.'],
+['seoul-urt','Mapo','Bakery & Cafe','URT','Yes','Yes','No','Sourdough; croissants; tiramisu pastry; pistachio/chocolate pastry; peach-and-cream croissant','Saved 100% vegan bakery/restaurant lead; pastries may sell out early.'],
+['seoul-vegetus','Itaewon','Lunch & Dinner','Vegetus','Yes','Yes','No','Vegan burgers; lasagna; mac and cheese','Saved vegan comfort-food lead; screenshot notes outdoor seating and Monday closure.'],
+['seoul-plant-cafe','Itaewon','Cafe & Brunch','Plant Cafe Seoul','Yes','Yes','No','Moussaka; pistachio cake; hummus tempeh bowl','Saved vegan cafe; screenshot notes multiple locations and a bakery/rooftop location.'],
+['seoul-monks','Itaewon','Dinner','Monks Butcher','Yes','Yes','No','Seaweed avocado soba; burger and fries','Saved upscale vegan dinner lead.'],
+['seoul-alt-a','Seoul','Lunch & Dinner','ALT.a','Yes','Yes','No','Vegan jajangmyeon; mapo tofu','Screenshot describes Michelin Guide inclusion and recommends booking ahead.'],
+['seoul-gosari','Seoul Central Market','Lunch & Dinner','Gosari Express','Yes','Yes','No','Carrot momos; peanut-butter noodles','Saved small vegan spot; screenshot notes limited seating and Michelin Guide mention.'],
+['seoul-overte','Seoul','Bakery & Cafe','Overte','Yes','Yes','No','Raspberry donut; garlic-and-cream-cheese donut; matcha or coffee','Saved vegan donut-shop lead.'],
+['seoul-mahina','Seoul','Bakery & Cafe','Mahina Vegan Table','Yes','Yes','No','Tiramisu; meatball pasta; donut with vanilla ice cream','Saved creator recommendation.'],
+['seoul-nuldam','Seoul','Cafe','Nuldam Space','Yes','Options','Verify','Black Sesame Cream Latte','Saved cafe recommendation; verify ingredients for Riya.'],
+['seoul-ferments','Hannam','Cafe & Brunch','Ferments Hannam','Yes','Options','Verify','Vegan hummus bowls; vegan bingsu','Saved vegan-options lead.'],
+['seoul-rooted','Seoul','Cafe & Brunch','Rooted Seoul','Yes','Yes','No','Whole-food salads; hummus bowls; banana pudding','Saved fully vegan lead.'],
+['seoul-selermari','Seoul','Lunch & Dinner','Selermari Seoul','Yes','Options','Verify','Mushroom gimbap + pesto; vegan pesto udon','Saved vegan-options lead.'],
+['seoul-cowttebokki','Seoul','Lunch & Dinner','Cowttebokki','Yes','Options','Verify','Tteokbokki menu','Saved vegan-options lead.'],
+['seoul-chaeyuk','Seoul','Lunch & Dinner','Chaeyuk','Yes','Options','Verify','Vegan doenjang-jjigae','Saved vegan-options lead.'],
+['seoul-olivia','Haebangchon','Lunch & Dinner','Olivia House HBC','Yes','Options','Verify','Mushroom aglio olio pasta','Saved vegan-options lead.'],
+['seoul-mama-ethiopian','Seoul','Lunch & Dinner','Mama Ethiopian Cuisine','Yes','Options','Verify','Ethiopian vegetarian food','Saved vegetarian-friendly lead.'],
+['seoul-saravanaa','Seoul','Indian','Saravanaa Bhavan','Yes','Options','Verify','Masala dosa — creator suggests no ghee','Verify ingredients and egg/dairy requirements when ordering.'],
+['seoul-cafe-turtle','Seoul','Desserts & Bakeries','Cafe Turtle','Yes','Options','Verify','Desserts','Saved Seoul dessert lead; verify egg-free items for Riya.'],
+['seoul-knotted','Seoul','Desserts & Bakeries','Knotted','Yes','No','Yes / varies','Fluffy donuts; coffee; matcha drinks','Popular cafe/bakery lead; bakery items require egg verification for Riya.'],
+['seoul-beton','Seongsu','Desserts & Bakeries','BETON','Yes','No','Yes / varies','Sogeum-ppang / salty bread','Saved viral bakery lead; verify egg-free items for Riya.'],
+['seoul-milestone','Seongsu / Seoul Forest','Coffee & Matcha','Milestone Coffee Seongsu','Yes','Options','Verify','Coffee','668-101 Seongsu-dong 1(il)-ga, Seongdong-gu — saved Seoul Forest neighborhood stop.'],
+['seoul-grandmother','Seongsu / Seoul Forest','Lunch & Dinner',"Grandmother’s Recipe",'Yes','Options','Verify','Verify vegetarian dishes','668-108 Seongsu-dong 1(il)-ga, Seongdong-gu — saved neighborhood stop.'],
+['seoul-rafre','Seongsu / Seoul Forest','Cafe','Rafre Fruit','Yes','Options','Verify','Fruit / cafe stop','685-495 Seongsu-dong 1(il)-ga, Seongdong-gu.'],
+['seoul-juuneedu','Seongsu / Seoul Forest','Cafe','Juuneedu','Yes','Options','Verify','Cafe stop','685-497 Seongsu-dong 1(il)-ga, Seongdong-gu.'],
+['seoul-clementine','Seongsu / Seoul Forest','Cafe','Clementine','Yes','Options','Verify','Cafe stop','685-490 Seongsu-dong 1(il)-ga, Seongdong-gu.']
+];
+for(const a of seoulFood){const [id,zone,category,name,vegetarian,vegan,egg,mustTry,why]=a;if(!DATA.restaurants.some(r=>r.id===id||r.name===name))DATA.restaurants.push({id,country:'South Korea',city:'Seoul',zone,category,name,vegetarian,vegan,egg,reservation:'Verify / check current status',base:'LOTTE City Hotel Myeongdong',nearHotel:zone.includes('Myeongdong')?'Yes':'No',mustTry,why,price:'$$',priority:'Saved from Seoul list / screenshots',maps:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(name+' Seoul'),directions:'https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=LOTTE+City+Hotel+Myeongdong&destination='+encodeURIComponent(name+' Seoul'),source:'User saved list / screenshot',verify:'Verify current hours, operation and dietary details before trip'});}
+
+const addSeoulShop=(id,name,category,area,address,why,articles)=>{upsertShop(id,{city:'Seoul',name,category,area,address,why,tax:'Verify current tourist tax-refund / promotion terms in store',maps:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(name+' Seoul'),fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=LOTTE+City+Hotel+Myeongdong&destination='+encodeURIComponent(name+' Seoul')});SHOP_ARTICLES[id]=articles};
+addSeoulShop('seoul-pharmacy-beauty','Korea Pharmacy Beauty Finds','Beauty','Pharmacies / Seoul','Choose convenient pharmacy along route','Typed Korea beauty list; exact stock varies.',['CULIP Ointment — lip balm / pharmacy','Gounbal Foot Cream','Derma Gram Gel']);
+addSeoulShop('seoul-dasique','Dasique','Beauty','Seoul','Verify branch / pop-up','Saved beauty stop.',['DIY Dasique Palette']);
+addSeoulShop('seoul-mimiline','Mimiline','Beauty','Seoul','Verify branch','Saved beauty lead.',['Mimiline']);
+addSeoulShop('seoul-haircare','Olive Young Hair-Care Finds','Beauty / hair','Olive Young / Seoul','Use convenient Olive Young branch','Screenshot products; stock varies by branch.',['UNOVE Water Essence Mist / spray-on treatment','UNOVE Water Essence Water Pack','UNOVE Deep Damage Treatment EX duo','Aromatica Rosemary Root Enhancer']);
+addSeoulShop('seoul-fashion-jongno','Okbanji','Fashion / jewellery','Jongno 3-ga','Jongno 3-ga, Seoul','Saved fashion/jewellery lead.',['Okbanji']);
+addSeoulShop('seoul-namdaemun-jade','Namdaemun Market','Jewellery / market','Namdaemun','Namdaemun Market, Seoul','Saved market jewellery lead.',['Jade rings','Norigae']);
+addSeoulShop('seoul-newbalance','New Balance Seongsu','Fashion','Seongsu','Seongsu, Seoul','Saved Seoul-exclusive item lead.',['Seoul Exclusive Packable Tote']);
+addSeoulShop('seoul-rockfish','Rockfish Weatherwear','Fashion','Seoul','Verify branch','Saved fashion lead.',['Rockfish Weatherwear']);
+addSeoulShop('seoul-bags','Korean Bag Brands','Bags','Seoul','Check convenient branches / Seongsu / Hannam / shopping districts','Saved bag-brand shortlist.',['Standoil','Osoi','Samo Ondoh','Marge Sherwood','NyuNyu']);
+addSeoulShop('seoul-muds','MU:DS — National Museum of Korea','Souvenirs / design','Yongsan','National Museum of Korea, Seoul','Museum-design souvenir lead.',['Dancheong Keycaps']);
+addSeoulShop('seoul-ongo','ONGO Seongsu','Souvenirs / fashion','Seongsu','Seongsu, Seoul','Saved Korean-design souvenir lead.',['Korean Knotwork Cap']);
+addSeoulShop('seoul-perfume','Seongsu & Seoul Perfume Brands','Perfume','Seongsu + Seoul','Multiple stores','Use as a perfume trail; addresses below are from saved screenshots where supplied.',['CHWI','Matthew Chang Perfumes','Loivie','Nonfiction — 8-1 Yeonmujang-gil; Gentle Night / Santal Cream / Odorama Cities mentioned','Tamburins — 8 Yeonmujang 5-gil; Chamo and shell-shaped hand creams mentioned','BIBIANG — 6 Yeonmujang 7-gil; Walnut Creek Green / GUREUM (Cloud) mentioned','Loe','Hetras — 68 Yeonmujang-gil; Hotel Wood mentioned','Pesade','BORNTOSTANDOUT — 29 Ttukseom-ro 17-gil; Dirty Rice mentioned']);
+addSeoulShop('seoul-dongdaemun-bedding','Dongdaemun Bedding Stalls','Home / bedding','Dongdaemun','Basement 1F; mainly Building A and New Building','Saved screenshot notes custom-making may take about a week and some vendors may not speak English.',['Chilseong Bedding — Building A B1, stalls 5–8','JIINhome — New Building B1, stalls 12–17','Allerman — Building A B1, stall 004','Kkomabang — Building A B1, stall 1194-5']);
+addSeoulShop('seoul-mangwon','Mangwon Market','Market','Mangwon','Mangwon Market, Seoul','Typed Seoul market stop.',['Browse market finds / souvenirs']);
+addSeoulShop('seoul-gwangjang-olive','Olive Young — Gwangjang Market Area','Beauty','Gwangjang Market','Gwangjang Market area, Seoul','Typed shopping stop.',['Beauty / skincare shopping','Check current in-store tourist promotions / freebies']);
+addSeoulShop('seoul-freebies','Promotion / Freebie Checks','Shopping tip','Seoul','Check current promotions at time of visit','Freebies are saved leads, not guaranteed.',['Lotte Department Store — check tourist promotions / freebies','Olive Young — check tourist promotions / freebies','Musinsa — check tourist promotions / freebies']);
+// ===== END V8 SEOUL + HOMEPAGE UPDATE =====
+
 render();
 </script>
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load', async ()=>{
-    try{
-      const reg=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
-      await reg.update();
-      let refreshing=false;
-      navigator.serviceWorker.addEventListener('controllerchange',()=>{
-        if(refreshing) return;
-        refreshing=true;
-        location.reload();
-      });
-      if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
-    }catch(e){console.warn('Offline mode unavailable',e)}
-  });
-}
-</script></body></html>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}</script></body></html>

@@ -56,11 +56,12 @@ let state={
  itinerary:store.get('itinerary',{}),
  expenses:store.get('expenses',DATA.knownExpenses),
  notes:store.get('notes',[]),
- ratings:store.get('ratings',{})
+ ratings:store.get('ratings',{}),
+ shoppingChecks:store.get('shoppingChecks',{})
 };
 const navItems=[['home','⌂','Home'],['journey','◉','Journey'],['food','♨','Food'],['wallet','◇','Wallet'],['readiness','✓','Ready']];
 function go(route){location.hash=route}
-function persist(){store.set('favorites',state.favorites);store.set('visited',state.visited);store.set('tasks',state.tasks);store.set('itinerary',state.itinerary);store.set('expenses',state.expenses);store.set('notes',state.notes);store.set('ratings',state.ratings)}
+function persist(){store.set('favorites',state.favorites);store.set('visited',state.visited);store.set('tasks',state.tasks);store.set('itinerary',state.itinerary);store.set('expenses',state.expenses);store.set('notes',state.notes);store.set('ratings',state.ratings);store.set('shoppingChecks',state.shoppingChecks)}
 function routeBase(){return state.route.split('/')[0]}
 function renderNav(){const active=routeBase();$('#nav').innerHTML=navItems.map(([r,i,l])=>`<button class="${active===r?'active':''}" onclick="go('${r}')"><span>${i}</span>${l}</button>`).join('')}
 function setHeader(sub='Our Honeymoon Journal'){ $('#headerSub').textContent=sub; $('#backBtn').style.visibility=state.route==='home'?'hidden':'visible' }
@@ -286,6 +287,76 @@ function renderWallet(){setHeader('Budget and official prices');const total=stat
 function render(){state.route=location.hash.slice(1)||'home';renderNav();const [path]=state.route.split('?'),parts=path.split('/'),base=parts[0];if(base==='home')renderHome();else if(base==='journey')renderJourney();else if(base==='city')renderCity(decodeURIComponent(parts.slice(1).join('/')));else if(base==='today')renderToday();else if(base==='food')renderFood();else if(base==='restaurant')renderRestaurant(parts[1]);else if(base==='favorites')renderFavorites();else if(base==='wallet')renderWallet();else if(base==='readiness')renderReadiness();else if(base==='essentials')renderEssentials();else if(base==='accommodation')renderAccommodation();else if(base==='hotel')renderHotel(parts[1]);else if(base==='bookings')renderBookings();else if(base==='flight')renderFlight(parts[1]);else if(base==='luggage')renderLuggage();else if(base==='documents')renderDocuments();else if(base==='practical')renderPractical(parts[1]);else if(base==='shopping')renderShopping();else if(base==='shop')renderShop(parts[1]);else if(base==='journal')renderJournal();else renderMore();window.scrollTo(0,0)}
 Object.assign(window,{stop});
 // ===== END VERSION 2 OVERRIDES =====
+
+
+// ===== SEPTEMBER 2026 LIVE TRIP UPDATE =====
+// Latest confirmed itinerary changes
+const patchDay=(date,changes)=>{const d=DATA.itinerary.find(x=>x.date===date); if(d) Object.assign(d,changes)};
+patchDay('2026-10-10',{morning:'Travel Osaka → Kyoto (AONIYOSHI unavailable / not booked)',transport:'Kintetsu / regular rail + local transit'});
+patchDay('2026-10-11',{afternoon:'Arashiyama, Togetsukyo + Sagano Romantic Train — BOOKED',transport:'JR + Sagano Romantic Train (booked)'});
+patchDay('2026-10-18',{morning:'Tokyo DisneySea',afternoon:'Tokyo DisneySea',evening:'Return to Ginza',transport:'JR Keiyo Line / Disney Resort Line'});
+patchDay('2026-10-19',{morning:'Meiji Shrine + Harajuku',afternoon:'Shibuya shopping',evening:'Shibuya / flexible evening',transport:'JR Yamanote / Metro'});
+const fujiCity=DATA.cities.find(x=>x.name==='Fuji / Kawaguchiko'); if(fujiCity){fujiCity.stay='Fujisan Onsen Hotel Kaneyamaen';fujiCity.status='Booked';fujiCity.area='Fujiyoshida / Fuji Five Lakes'}
+
+// Store → individually checkable articles. Latest explicit user list takes precedence.
+const SHOP_ARTICLES={
+ 'tokyo-muji':['Half socks for sandals','Mesh bag','Bottle-drying stick','Cleansing gel','Hand soap','Scalp scrub','Cooling mist — blue','Manual paper shredder','Portable cup'],
+ 'tokyo-daiso':['Stretchable silicone wrap','Peach wooden comb','Heat-seal pouches','Puff & sponge cleaner','Bulk makeup sponges','Gorilla Grip','Metal comb / ReFa-dupe lead','Scissors'],
+ 'tokyo-refa':['Heart Brush','Hair mist / perfume'],
+ 'tokyo-donki':['Okuchi mouthwash sachets','Biore sunscreen / UV A','White T-shirt','P-symbol Donki-exclusive items','Hiritu Hair Oil','SQUSE ME 5-in-1 nail paint','Kiss Me Heroine mascara cleanser','Suisai Enzyme Powder Wash — Gold travel pack','Takumi no Waza stainless-steel nail clippers','Ululis Premium Water Conc Black Serum Hair Oil','Botanist hair products','Mentholatum Water Lip SPF20 PA++ — Raspberry Red','LIPO LABO keratin-serum hair oil — Sleek Repair','D Soothing Series UV Sun Stick SPF50+ PA++++','Nature Republic California Aloe Fresh Powdery Sun Stick SPF50+','CANMAKE Creamy Touch Liner','Moist Diane Extra Moist & Shine / Extra Damage Repair','Orpo Bath Tablets','Gyutto Corset Hair Treatment Serum','Gyutto Corset Hair Treatment Mask','Make Keep Mist EX+ Cool','CALAMEE Makeup Prep Square Pad','Roihi-Tsuboko patches','MegRhythm Gentle Steam Eye Mask — Rose','Kobayashi CoMure Care Yoko Yoko'],
+ 'tokyo-madras':['META insole'],
+ 'tokyo-itoya':['Stationery'],
+ 'tokyo-onitsuka':['Onitsuka Tiger Mexico 66','Check Japan-exclusive colourways'],
+ 'tokyo-loft-shibuya':['Umbrella'],
+ 'tokyo-jins':['Glasses'],
+ 'tokyo-kitamura-shibuya':['Camera shopping'],
+ 'tokyo-bic':['Electronics / camera shopping'],
+ 'tokyo-yodobashi':['Electronics / camera shopping'],
+ 'tokyo-kappabashi':['Big whisk','Small whisk','Matcha whisk','Miso Tama whisk / muddler','Knife sharpener','Reusable piping bags','Dough cutter','Sifters / strainers','Sake cup','Stainless-steel chopsticks','Mini utensils','Small stainless-steel containers','Mini KINTO water bottle'],
+ 'kyoto-nishiki':['Hair stick'],
+ 'kyoto-glanta':['Jewellery'],
+ 'kyoto-patam':['Patam JapanBag'],
+ 'kyoto-ippodo':['Tea / matcha'],
+ 'osaka-konbini':['GABA chocolate','Ramune viral jelly drink','7-Eleven umbrella with case / microfibre towel','KitKat','Sugar butter tube']
+};
+
+const upsertShop=(id,obj)=>{let x=DATA.shopping.find(s=>s.id===id);if(x)Object.assign(x,obj);else DATA.shopping.push({id,...obj})};
+upsertShop('tokyo-muji',{city:'Tokyo',name:'MUJI Ginza',category:'Lifestyle / travel',area:'Ginza',address:'3-3-5 Ginza',why:'Main MUJI shopping checklist',tax:'Check current tax-free rules in store',maps:'https://www.google.com/maps/search/?api=1&query=MUJI+Ginza',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=Daiwa+Roynet+Hotel+Ginza+PREMIER&destination=MUJI+Ginza'});
+upsertShop('tokyo-daiso',{city:'Tokyo',name:'Daiso — Marronnier Gate Ginza 2',category:'100-yen / practical',area:'Ginza',address:'Marronnier Gate Ginza 2, 6F · 11:00–21:00 (recheck before trip)',why:'Practical household and beauty finds',tax:'Check current tax-free rules',maps:'https://www.google.com/maps/search/?api=1&query=Daiso+Marronnier+Gate+Ginza+2',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=Daiwa+Roynet+Hotel+Ginza+PREMIER&destination=Daiso+Marronnier+Gate+Ginza+2'});
+upsertShop('tokyo-donki',{city:'Tokyo',name:'Don Quijote Ginza',category:'Drugstore / variety',area:'Ginza',address:'Ginza Nine #3, 8-10 Ginza · 24h noted; recheck',why:'Main beauty, drugstore and Donki-exclusive checklist',tax:'Check tourist tax-free eligibility',maps:'https://www.google.com/maps/search/?api=1&query=Don+Quijote+Ginza',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=Daiwa+Roynet+Hotel+Ginza+PREMIER&destination=Don+Quijote+Ginza'});
+upsertShop('tokyo-madras',{city:'Tokyo',name:'madras Ginza',category:'Footwear',area:'Ginza',address:'Verify exact branch/hours',why:'META insole stop',tax:'Verify in store',maps:'https://www.google.com/maps/search/?api=1&query=madras+Ginza',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=Daiwa+Roynet+Hotel+Ginza+PREMIER&destination=madras+Ginza'});
+upsertShop('tokyo-itoya',{city:'Tokyo',name:'Ginza Itoya',category:'Stationery',area:'Ginza',address:'2-7-15 Ginza · 10:00–20:00 weekdays / 10:00–19:00 Sun-holidays noted; recheck',why:'Stationery stop',tax:'Verify in store',maps:'https://www.google.com/maps/search/?api=1&query=Ginza+Itoya',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=Daiwa+Roynet+Hotel+Ginza+PREMIER&destination=Ginza+Itoya'});
+upsertShop('tokyo-onitsuka',{city:'Tokyo',name:'Onitsuka Tiger Ginza',category:'Shoes',area:'Ginza',address:'5-6-2 Ginza · 11:00–20:00 noted; recheck',why:'Mexico 66 and Japan-exclusive colourways',tax:'Check tourist tax-free eligibility',maps:'https://www.google.com/maps/search/?api=1&query=Onitsuka+Tiger+Ginza',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=Daiwa+Roynet+Hotel+Ginza+PREMIER&destination=Onitsuka+Tiger+Ginza'});
+upsertShop('tokyo-loft-shibuya',{city:'Tokyo',name:'Shibuya Loft',category:'Lifestyle',area:'Shibuya',address:'21-1 Udagawacho · 10:00–21:00 noted; recheck',why:'Umbrella and lifestyle shopping',tax:'Verify in store',maps:'https://www.google.com/maps/search/?api=1&query=Shibuya+Loft',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=Daiwa+Roynet+Hotel+Ginza+PREMIER&destination=Shibuya+Loft'});
+upsertShop('tokyo-jins',{city:'Tokyo',name:'JINS Shinjuku',category:'Eyewear',area:'Shinjuku',address:'3-1-20 Shinjuku · 10:30–21:30 noted; recheck',why:'Glasses',tax:'Verify in store',maps:'https://www.google.com/maps/search/?api=1&query=JINS+Shinjuku',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=Daiwa+Roynet+Hotel+Ginza+PREMIER&destination=JINS+Shinjuku'});
+upsertShop('tokyo-kitamura-shibuya',{city:'Tokyo',name:'Kitamura Camera — Shibuya',category:'Camera',area:'Shibuya',address:'Exact branch/hours to verify',why:'Saved camera-shopping stop',tax:'Verify in store',maps:'https://www.google.com/maps/search/?api=1&query=Kitamura+Camera+Shibuya',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=Daiwa+Roynet+Hotel+Ginza+PREMIER&destination=Kitamura+Camera+Shibuya'});
+upsertShop('tokyo-bic',{city:'Tokyo',name:'BicCamera',category:'Electronics / camera',area:'Tokyo',address:'Choose convenient branch along itinerary',why:'Electronics and camera comparison',tax:'Check tourist tax-free eligibility',maps:'https://www.google.com/maps/search/?api=1&query=BicCamera+Tokyo',fromHotel:'https://www.google.com/maps/search/?api=1&query=BicCamera+near+Daiwa+Roynet+Hotel+Ginza+PREMIER'});
+upsertShop('tokyo-yodobashi',{city:'Tokyo',name:'Yodobashi Camera',category:'Electronics / camera',area:'Tokyo',address:'Choose convenient branch along itinerary',why:'Electronics and camera comparison',tax:'Check tourist tax-free eligibility',maps:'https://www.google.com/maps/search/?api=1&query=Yodobashi+Camera+Tokyo',fromHotel:'https://www.google.com/maps/search/?api=1&query=Yodobashi+Camera+Tokyo'});
+upsertShop('tokyo-kappabashi',{city:'Tokyo',name:'Kappabashi Kitchen Town',category:'Kitchenware',area:'Kappabashi',address:'Allow about 2–3 hours; choose stores by item',why:'Dedicated kitchenware checklist',tax:'Varies by store',maps:'https://www.google.com/maps/search/?api=1&query=Kappabashi+Kitchen+Town',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=Daiwa+Roynet+Hotel+Ginza+PREMIER&destination=Kappabashi+Kitchen+Town'});
+upsertShop('kyoto-nishiki',{city:'Kyoto',name:'Nishiki Market',category:'Market / accessories',area:'Nishiki',address:'Nishiki Market, Kyoto',why:'Hair stick + browsing',tax:'Varies by store',maps:'https://www.google.com/maps/search/?api=1&query=Nishiki+Market+Kyoto',fromHotel:'https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=Hotel+Forza+Kyoto+Shijo+Kawaramachi&destination=Nishiki+Market'});
+upsertShop('kyoto-glanta',{city:'Kyoto',name:'Glanta Kyoto',category:'Jewellery',area:'Kyoto',address:'Verify branch/hours before trip',why:'Priority jewellery stop',tax:'Verify in store',maps:'https://www.google.com/maps/search/?api=1&query=Glanta+Kyoto',fromHotel:'https://www.google.com/maps/search/?api=1&query=Glanta+Kyoto'});
+upsertShop('kyoto-patam',{city:'Kyoto',name:'Patam Kyoto Teramachi',category:'Bags',area:'Teramachi',address:'430-4 Sakuranocho, Nakagyo-ku · 11:00–20:00 noted; recheck',why:'Patam JapanBag',tax:'Verify in store',maps:'https://www.google.com/maps/search/?api=1&query=Patam+Kyoto+Teramachi',fromHotel:'https://www.google.com/maps/search/?api=1&query=Patam+Kyoto+Teramachi'});
+upsertShop('kyoto-ippodo',{city:'Kyoto',name:'Ippodo Tea Kyoto Main Store',category:'Tea / matcha',area:'Nakagyo',address:'52 Tokiwagi-cho, Nakagyo-ku · 10:00–17:00 noted; recheck closure',why:'Tea and matcha',tax:'Verify in store',maps:'https://www.google.com/maps/search/?api=1&query=Ippodo+Tea+Kyoto+Main+Store',fromHotel:'https://www.google.com/maps/search/?api=1&query=Ippodo+Tea+Kyoto+Main+Store'});
+upsertShop('osaka-konbini',{city:'Osaka',name:'Convenience-store finds',category:'Snacks / practical',area:'Along route',address:'7-Eleven / Lawson / convenience stores',why:'Saved small buys; availability varies',tax:'Normal convenience-store rules',maps:'https://www.google.com/maps/search/?api=1&query=7-Eleven+Namba+Osaka',fromHotel:'https://www.google.com/maps/search/?api=1&query=7-Eleven+near+Sotetsu+Grand+Fresa+Osaka+Namba'});
+
+function shopArticles(x){
+ const direct=SHOP_ARTICLES[x.id]; if(direct)return direct;
+ const raw=(x.buy||'').split(/[,;•]/).map(v=>v.trim()).filter(Boolean);
+ return raw.length?raw:[];
+}
+function shopKey(shopId,i){return shopId+'::'+i}
+function toggleShopItem(shopId,i,v){state.shoppingChecks[shopKey(shopId,i)]=v;persist();render()}
+function shopProgress(x){const a=shopArticles(x);return [a.filter((_,i)=>state.shoppingChecks[shopKey(x.id,i)]).length,a.length]}
+
+// Override shopping pages with real persistent checklists
+renderShopping=function(){const q=queryParams(),city=q.city||'All';setHeader('Shopping checklists');const cities=['All',...new Set(DATA.shopping.map(x=>x.city))];const items=city==='All'?DATA.shopping:DATA.shopping.filter(x=>x.city===city);$('#view').innerHTML=`<div class="page-title"><div><h1>Shopping Checklists</h1><p>Open a store and tick each article as you buy it. Checkmarks stay saved on this device.</p></div></div><div class="chips">${cities.map(x=>`<button class="chip ${city===x?'active':''}" onclick="go('shopping${x==='All'?'':'?city='+encodeURIComponent(x)}')">${esc(x)}</button>`).join('')}</div><div class="list">${items.map(x=>{const [done,total]=shopProgress(x);return `<div class="row card click" onclick="go('shop/${x.id}')"><div class="row-main"><span class="kicker">${esc(x.city)} · ${esc(x.category)}</span><b>${esc(x.name)}</b><small>${esc(x.area)}${total?` · ${done}/${total} bought`:''}</small></div><b>›</b></div>`}).join('')}</div>`}
+renderShop=function(id){const x=DATA.shopping.find(s=>s.id===id);if(!x)return go('shopping');const articles=shopArticles(x),[done,total]=shopProgress(x);setHeader(x.city+' shopping');$('#view').innerHTML=`<div class="page-title"><div><span class="kicker">${esc(x.city)} · ${esc(x.category)}</span><h1>${esc(x.name)}</h1><p>${esc(x.area)}${total?` · ${done}/${total} bought`:''}</p></div></div><div class="detail-grid"><div class="detail-item"><small>Location / address</small><b>${esc(x.address)}</b></div><div class="detail-item"><small>Tax-free note</small><b>${esc(x.tax)}</b></div></div>${articles.length?`<section class="section"><div class="section-head"><h2>Articles</h2><span class="badge">${done}/${total}</span></div><div class="list">${articles.map((a,i)=>`<label class="row"><input class="check" type="checkbox" ${state.shoppingChecks[shopKey(x.id,i)]?'checked':''} onchange="toggleShopItem('${x.id}',${i},this.checked)"><div class="row-main"><b>${esc(a)}</b><small>${state.shoppingChecks[shopKey(x.id,i)]?'Bought ✓':'To buy'}</small></div></label>`).join('')}</div></section>`:`<div class="notice">No specific article has been assigned to this store yet.</div>`}<section class="section"><div class="card"><h3>Why saved</h3><p>${esc(x.why)}</p><div class="actions"><button class="btn primary" onclick="window.open('${x.fromHotel}','_blank')">Directions from basecamp</button><button class="btn" onclick="window.open('${x.maps}','_blank')">Open in Maps</button></div></div></section>`}
+
+// Add confirmed ticket block to Bookings page without exposing booking references.
+const oldRenderBookings=renderBookings;
+renderBookings=function(){oldRenderBookings();const v=$('#view');v.insertAdjacentHTML('beforeend',`<section class="section"><div class="section-head"><h2>Confirmed Japan tickets</h2></div><div class="list"><div class="row card"><div class="row-main"><span class="kicker">Oct 11 · Kyoto / Arashiyama</span><b>Sagano Romantic Train</b><small>BOOKED ✓ · Included in Oct 11 itinerary</small></div><span class="badge">Booked</span></div><div class="row card"><div class="row-main"><span class="kicker">Oct 18 · Tokyo</span><b>Tokyo DisneySea</b><small>Planned for Oct 18 · confirm ticket date in your official booking if changed</small></div><span class="badge gold">Trip plan</span></div><div class="row card"><div class="row-main"><span class="kicker">Oct 10 · Osaka → Kyoto</span><b>AONIYOSHI</b><small>Not booked / unavailable</small></div><span class="badge pink">Not booked</span></div></div></section>`)}
+Object.assign(window,{toggleShopItem});
+// ===== END SEPTEMBER 2026 LIVE TRIP UPDATE =====
 
 render();
 </script>
